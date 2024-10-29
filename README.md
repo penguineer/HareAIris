@@ -20,6 +20,52 @@ Configuration is done using environment variables:
 * `OPENAI_API_KEY`: API key for accessing the OpenAI API
 * `OPENAI_ENDPOINT`: Base URL for the OpenAI API (default `https://api.openai.com/v1`)
 
+## Build
+
+The build is split into two stages:
+
+1. Packaging with [Maven](https://maven.apache.org/)
+2. Building the Docker container
+
+This means that the [Dockerfile](Dockerfile) expects one (and only one) JAR file in the target directory.
+Build as follows:
+
+```bash
+mvn --batch-mode --update-snapshots clean package
+docker build .
+```
+
+The whole process is coded in the [docker-publish workflow](.github/workflows/docker-build.yml) and only needs to be
+executed manually for local builds.
+
+## Run with Docker
+
+With the configuration stored in a file `.env`, the service can be run as follows:
+
+```bash
+docker run --rm \
+           -p 8080:8080 \
+           --env-file .env \
+           mrtux/hareairis
+```
+
+The service does not store any state and therefore needs no mount points or other persistence.
+
+Please make sure to pin the container to a specific version in a production environment.
+
+## Development
+
+Version numbers are determined with [jgitver](https://jgitver.github.io/).
+If you encounter a project version `0` there is an issue with the jgitver generator.
+
+For local execution the configuration can be provided in a `.env` file and made available using `dotenv`:
+
+```bash
+dotenv ./mvnw mn:run
+```
+
+Note that `.env` is part of the `.gitignore` and can be safely stored in the local working copy.
+
 ## Maintainers
 
 * Stefan Haun ([@penguineer](https://github.com/penguineer))

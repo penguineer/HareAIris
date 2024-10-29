@@ -14,3 +14,21 @@ management:
 spring:
   application:
     name: HareAIris
+
+  rabbitmq:
+    host: ${RMQ_HOST:localhost}
+    port: ${RMQ_PORT:5672}
+    username: ${RMQ_USER:guest}
+    password: ${RMQ_PASSWORD:guest}
+
+  ai:
+    azure:
+      openai:
+        api-key: ${OPENAI_API_KEY}
+        endpoint: ${OPENAI_ENDPOINT:https://api.openai.com/v1}
+    retry:
+      max-attempts: 3
+      backoff:
+        delay: 1000
+        multiplier: 2
+>>>>>>> 806aaef (fixup! Add RabbitMQ configuration)

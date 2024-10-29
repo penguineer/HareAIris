@@ -20,6 +20,7 @@ spring:
     port: ${RMQ_PORT:5672}
     username: ${RMQ_USER:guest}
     password: ${RMQ_PASSWORD:guest}
+    virtual-host: ${RMQ_VHOST:/}
 
   ai:
     azure:
@@ -31,3 +32,7 @@ spring:
       backoff:
         initial-interval: 1000
         multiplier: 2
+
+hareairis:
+  rabbitmq:
+    queue-chat-requests: ${RMQ_QUEUE_CHAT_REQUESTS:chat_requests}

@@ -17,6 +17,8 @@ Configuration is done using environment variables:
 * `RMQ_PORT`: Port for RabbitMQ (default `5672`)
 * `RMQ_USER`: Username for RabbitMQ (default `guest`)
 * `RMQ_PASSWORD`: Password for RabbitMQ (default `guest`)
+* `RMQ_VHOST`: Virtual host for RabbitMQ (default `/`)
+* `RMQ_CHAT_REQUESTS`: RabbitMQ queue for chat requests (default `chat_requests`)
 * `OPENAI_API_KEY`: API key for accessing the OpenAI API
 * `OPENAI_ENDPOINT`: Base URL for the OpenAI API (default `https://api.openai.com/v1`)
 

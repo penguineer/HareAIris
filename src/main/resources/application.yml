@@ -1,3 +1,16 @@
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      enabled: true
+
 spring:
   application:
     name: HareAIris

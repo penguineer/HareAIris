@@ -8,6 +8,12 @@ rainbow and a messenger of the gods, symbolizing communication and connection. T
 agility, attributes often associated with rabbits. Together, "HareAIris" signifies a swift and efficient messenger that
 bridges the gap between RabbitMQ and OpenAI, embodying the project's core functionality.
 
+## Configuration
+
+Configuration is done using environment variables:
+
+* `PORT`: Port for the HTTP endpoint (default `8080`, only change when running locally!)
+
 ## Maintainers
 
 * Stefan Haun ([@penguineer](https://github.com/penguineer))

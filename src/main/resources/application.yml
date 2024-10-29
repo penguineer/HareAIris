@@ -1,0 +1,33 @@
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      enabled: true
+
+spring:
+  application:
+    name: HareAIris
+
+  rabbitmq:
+    host: ${RMQ_HOST:localhost}
+    port: ${RMQ_PORT:5672}
+    username: ${RMQ_USER:guest}
+    password: ${RMQ_PASSWORD:guest}
+
+  ai:
+    azure:
+      openai:
+        api-key: ${OPENAI_API_KEY}
+        endpoint: ${OPENAI_ENDPOINT:https://api.openai.com/v1}
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 1000
+        multiplier: 2

@@ -29,6 +29,5 @@ spring:
     retry:
       max-attempts: 3
       backoff:
-        delay: 1000
+        initial-interval: 1000
         multiplier: 2
->>>>>>> 806aaef (fixup! Add RabbitMQ configuration)

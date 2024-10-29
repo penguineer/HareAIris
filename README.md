@@ -70,6 +70,9 @@ Note that `.env` is part of the `.gitignore` and can be safely stored in the loc
 
 * Stefan Haun ([@penguineer](https://github.com/penguineer))
 
+If you like my work, please consider [sponsoring me](https://github.com/sponsors/penguineer), as this helps me to spend
+more time on open source projects.
+
 ## Contributing
 
 PRs are welcome!

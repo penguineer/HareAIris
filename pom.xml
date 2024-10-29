@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.penguineering</groupId>
 	<artifactId>hareairis</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version> <!-- Populated by jgitver -->
 	<name>HareAIris</name>
 	<description>Software bridge connecting RabbitMQ to the OpenAI API</description>
 	<url/>

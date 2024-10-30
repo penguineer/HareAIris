@@ -30,6 +30,7 @@ public class RabbitMQConfig {
         container.setMessageListener(handler);
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         container.setChannelTransacted(true);
+        container.setConcurrentConsumers(1);
         return container;
     }
 }

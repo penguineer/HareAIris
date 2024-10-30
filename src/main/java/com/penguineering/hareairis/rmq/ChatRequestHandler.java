@@ -1,8 +1,10 @@
 package com.penguineering.hareairis.rmq;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.penguineering.hareairis.ai.AIChatService;
 import com.penguineering.hareairis.model.ChatError;
+import com.penguineering.hareairis.model.ChatException;
 import com.penguineering.hareairis.model.ChatRequest;
 import com.penguineering.hareairis.model.ChatResponse;
 import com.rabbitmq.client.Channel;
@@ -76,7 +78,7 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             String replyTo = Optional
                     .ofNullable(message.getMessageProperties())
                     .map(MessageProperties::getReplyTo)
-                    .orElseThrow(() -> new ChatError(ChatError.Code.CODE_BAD_REQUEST, "Reply_to property is missing"));
+                    .orElseThrow(() -> new ChatException(ChatException.Code.CODE_BAD_REQUEST, "Reply_to property is missing"));
             logger.info("Reply-to header: {}", replyTo);
 
 
@@ -95,6 +97,7 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             // Acknowledge the message
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
+            logger.info("Error on chat request", e);
             Optional<String> json = serializeChatError(e);
             errorTo.ifPresentOrElse(
                     to -> json.ifPresent(
@@ -108,48 +111,56 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
 
     private void doExceptionBasedAck(Exception e, Channel channel, long deliveryTag) {
         try {
-            if (e instanceof ChatError chatError)
-                if (chatError.is5xxServerError())
-                    // Acknowledge the message
-                    channel.basicAck(deliveryTag, false);
+            if (e instanceof ChatException chatException)
+                if (chatException.is5xxServerError())
+                    // Do not acknowledge the message
+                    channel.basicNack(deliveryTag, false, true);
 
-            // Do not acknowledge the message
-            channel.basicNack(deliveryTag, false, true);
+            // Acknowledge the message
+            channel.basicAck(deliveryTag, false);
         } catch (IOException ex) {
             logger.error("Failed send message (n)ack!", ex);
         }
     }
 
-    private ChatRequest deserializeChatRequest(Message message) throws ChatError {
+    private ChatRequest deserializeChatRequest(Message message) throws ChatException {
         try {
             return objectMapper.readValue(message.getBody(), ChatRequest.class);
         } catch (Exception e) {
-            throw new ChatError(ChatError.Code.CODE_BAD_REQUEST,
+            throw new ChatException(ChatException.Code.CODE_BAD_REQUEST,
                     "Failed to deserialize chat request: " + e.getMessage());
         }
     }
 
-    private String serializeChatResponse(ChatResponse response) throws ChatError {
+    private String serializeChatResponse(ChatResponse response) throws ChatException {
         try {
             return objectMapper.writeValueAsString(response);
         } catch (Exception e) {
             logger.error("Failed to serialize chat response", e);
-            throw new ChatError(ChatError.Code.CODE_INTERNAL_SERVER_ERROR,
+            throw new ChatException(ChatException.Code.CODE_INTERNAL_SERVER_ERROR,
                     "Failed to serialize chat response: " + e.getMessage());
         }
     }
 
     private Optional<String> serializeChatError(Exception e) {
-        Optional<ChatError> error = e instanceof ChatError
-                ? Optional.of((ChatError) e)
-                : Optional.of(new ChatError(e.getMessage()));
+        Optional<ChatException> chatEx = e instanceof ChatException
+                ? Optional.of((ChatException) e)
+                : Optional.of(new ChatException(e.getMessage()));
 
         try {
-            return objectMapper.writeValueAsString(error).describeConstable();
+            return chatEx
+                    .map(ChatError::new)
+                    .map(err -> {
+                        try {
+                            return objectMapper.writeValueAsString(err);
+                        } catch (JsonProcessingException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+            //return objectMapper.writeValueAsString(error).describeConstable();
         } catch (Exception ex) {
             logger.error("Failed to serialize error", ex);
             return Optional.empty();
         }
-
     }
 }

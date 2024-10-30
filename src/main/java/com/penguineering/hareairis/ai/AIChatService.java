@@ -1,11 +1,16 @@
 package com.penguineering.hareairis.ai;
 
+import com.azure.core.exception.HttpResponseException;
+import com.penguineering.hareairis.model.ChatException;
 import com.penguineering.hareairis.model.ChatRequest;
 import com.penguineering.hareairis.model.ChatResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.azure.openai.AzureOpenAiChatOptions;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * Service to handle chat requests.
@@ -28,24 +33,53 @@ public class AIChatService {
      * @return The chat response.
      */
     public ChatResponse handleChatRequest(ChatRequest chatRequest) {
-        ChatClient chatClient = chatClientBuilder.build();
-        var chatResponse = chatClient
-                .prompt()
-                .user(chatRequest.getMessage())
-                .call()
-                .chatResponse();
+        try {
+            AzureOpenAiChatOptions options = renderAzureOpenAiChatOptions(chatRequest);
 
-        String response = chatResponse.getResult().getOutput().getContent();
+            ChatClient chatClient = chatClientBuilder
+                    .defaultOptions(options)
+                    .defaultSystem(chatRequest.getSystemMessage())
+                    .build();
+            var chatResponse = chatClient
+                    .prompt()
+                    .user(chatRequest.getPrompt())
+                    .call()
+                    .chatResponse();
 
-        logger.info("Received response from OpenAI: {}", response);
+            String response = chatResponse.getResult().getOutput().getContent();
 
-        Long promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
-        Long generationTokens = chatResponse.getMetadata().getUsage().getGenerationTokens();
+            logger.info("Received response from OpenAI: {}", response);
 
-        return ChatResponse.builder()
-                .response(response)
-                .inputTokens(promptTokens.intValue())
-                .outputTokens(generationTokens.intValue())
-                .build();
+            Long promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
+            Long generationTokens = chatResponse.getMetadata().getUsage().getGenerationTokens();
+
+            return ChatResponse.builder()
+                    .response(response)
+                    .inputTokens(promptTokens.intValue())
+                    .outputTokens(generationTokens.intValue())
+                    .build();
+        } catch (IllegalArgumentException e) {
+            throw new ChatException(ChatException.Code.CODE_BAD_REQUEST, e.getMessage());
+        } catch (HttpResponseException e) {
+            var response = e.getResponse();
+            throw new ChatException(response.getStatusCode(), e.getMessage());
+        }
+    }
+
+    private static AzureOpenAiChatOptions renderAzureOpenAiChatOptions(ChatRequest chatRequest) {
+        AzureOpenAiChatOptions options = new AzureOpenAiChatOptions();
+
+        if (Objects.nonNull(chatRequest.getMaxTokens()))
+            options.setMaxTokens(chatRequest.getMaxTokens());
+        if (Objects.nonNull(chatRequest.getTemperature()))
+            options.setTemperature(chatRequest.getTemperature());
+        if (Objects.nonNull(chatRequest.getTopP()))
+            options.setTopP(chatRequest.getTopP());
+        if (Objects.nonNull(chatRequest.getPresencePenalty()))
+            options.setPresencePenalty(chatRequest.getPresencePenalty());
+        if (Objects.nonNull(chatRequest.getFrequencyPenalty()))
+            options.setFrequencyPenalty(chatRequest.getFrequencyPenalty());
+
+        return options;
     }
 }

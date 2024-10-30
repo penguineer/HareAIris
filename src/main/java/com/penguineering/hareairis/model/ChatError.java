@@ -19,6 +19,7 @@ public class ChatError extends RuntimeException {
         CODE_GATEWAY_TIMEOUT(504);
 
         private final int code;
+
     }
 
     @JsonProperty("code")
@@ -37,5 +38,9 @@ public class ChatError extends RuntimeException {
         super(message);
         this.code = code.getCode();
         this.message = message;
+    }
+
+    public boolean is5xxServerError() {
+        return code >= 500 && code < 600;
     }
 }

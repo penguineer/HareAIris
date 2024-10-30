@@ -71,7 +71,6 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             logger.warn("Error_to header not provided, errors will be logged only!");
 
         try {
-            logger.info("Received message: {}", new String(message.getBody()));
             ChatRequest chatRequest = deserializeChatRequest(message);
 
             // Extract the "reply_to" property

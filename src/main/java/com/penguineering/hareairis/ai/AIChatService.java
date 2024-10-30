@@ -48,8 +48,6 @@ public class AIChatService {
 
             String response = chatResponse.getResult().getOutput().getContent();
 
-            logger.info("Received response from OpenAI: {}", response);
-
             Long promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
             Long generationTokens = chatResponse.getMetadata().getUsage().getGenerationTokens();
 

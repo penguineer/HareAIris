@@ -1,5 +1,7 @@
 package com.penguineering.hareairis.ai;
 
+import com.azure.core.exception.HttpResponseException;
+import com.penguineering.hareairis.model.ChatException;
 import com.penguineering.hareairis.model.ChatRequest;
 import com.penguineering.hareairis.model.ChatResponse;
 import org.slf4j.Logger;
@@ -28,24 +30,33 @@ public class AIChatService {
      * @return The chat response.
      */
     public ChatResponse handleChatRequest(ChatRequest chatRequest) {
-        ChatClient chatClient = chatClientBuilder.build();
-        var chatResponse = chatClient
-                .prompt()
-                .user(chatRequest.getPrompt())
-                .call()
-                .chatResponse();
+        try {
+            ChatClient chatClient = chatClientBuilder
+                    .defaultSystem(chatRequest.getSystemMessage())
+                    .build();
+            var chatResponse = chatClient
+                    .prompt()
+                    .user(chatRequest.getPrompt())
+                    .call()
+                    .chatResponse();
 
-        String response = chatResponse.getResult().getOutput().getContent();
+            String response = chatResponse.getResult().getOutput().getContent();
 
-        logger.info("Received response from OpenAI: {}", response);
+            logger.info("Received response from OpenAI: {}", response);
 
-        Long promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
-        Long generationTokens = chatResponse.getMetadata().getUsage().getGenerationTokens();
+            Long promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
+            Long generationTokens = chatResponse.getMetadata().getUsage().getGenerationTokens();
 
-        return ChatResponse.builder()
-                .response(response)
-                .inputTokens(promptTokens.intValue())
-                .outputTokens(generationTokens.intValue())
-                .build();
+            return ChatResponse.builder()
+                    .response(response)
+                    .inputTokens(promptTokens.intValue())
+                    .outputTokens(generationTokens.intValue())
+                    .build();
+        } catch (IllegalArgumentException e) {
+            throw new ChatException(ChatException.Code.CODE_BAD_REQUEST, e.getMessage());
+        } catch (HttpResponseException e) {
+            var response = e.getResponse();
+            throw new ChatException(response.getStatusCode(), e.getMessage());
+        }
     }
 }

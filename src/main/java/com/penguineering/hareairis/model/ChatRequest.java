@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatRequest {
+    @JsonProperty("system-message")
+    private String systemMessage = "";
+
     @JsonProperty("prompt")
-    private String prompt;
+    private String prompt = "";
 }

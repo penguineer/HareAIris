@@ -6,8 +6,11 @@ import com.penguineering.hareairis.model.ChatRequest;
 import com.penguineering.hareairis.model.ChatResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.azure.openai.AzureOpenAiChatOptions;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * Service to handle chat requests.
@@ -31,7 +34,10 @@ public class AIChatService {
      */
     public ChatResponse handleChatRequest(ChatRequest chatRequest) {
         try {
+            AzureOpenAiChatOptions options = renderAzureOpenAiChatOptions(chatRequest);
+
             ChatClient chatClient = chatClientBuilder
+                    .defaultOptions(options)
                     .defaultSystem(chatRequest.getSystemMessage())
                     .build();
             var chatResponse = chatClient
@@ -58,5 +64,22 @@ public class AIChatService {
             var response = e.getResponse();
             throw new ChatException(response.getStatusCode(), e.getMessage());
         }
+    }
+
+    private static AzureOpenAiChatOptions renderAzureOpenAiChatOptions(ChatRequest chatRequest) {
+        AzureOpenAiChatOptions options = new AzureOpenAiChatOptions();
+
+        if (Objects.nonNull(chatRequest.getMaxTokens()))
+            options.setMaxTokens(chatRequest.getMaxTokens());
+        if (Objects.nonNull(chatRequest.getTemperature()))
+            options.setTemperature(chatRequest.getTemperature());
+        if (Objects.nonNull(chatRequest.getTopP()))
+            options.setTopP(chatRequest.getTopP());
+        if (Objects.nonNull(chatRequest.getPresencePenalty()))
+            options.setPresencePenalty(chatRequest.getPresencePenalty());
+        if (Objects.nonNull(chatRequest.getFrequencyPenalty()))
+            options.setFrequencyPenalty(chatRequest.getFrequencyPenalty());
+
+        return options;
     }
 }

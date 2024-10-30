@@ -31,7 +31,7 @@ public class AIChatService {
         ChatClient chatClient = chatClientBuilder.build();
         var chatResponse = chatClient
                 .prompt()
-                .user(chatRequest.getMessage())
+                .user(chatRequest.getPrompt())
                 .call()
                 .chatResponse();
 

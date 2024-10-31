@@ -6,16 +6,25 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Optional;
-
+/**
+ * Represents a chat request.
+ *
+ * <p>Represents a chat request that can be sent to the AI service.</p>
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatRequest {
+    /**
+     * The system message of the chat client.
+     */
     @JsonProperty("system-message")
     private String systemMessage = "";
 
+    /**
+     * The actual prompt.
+     */
     @JsonProperty("prompt")
     private String prompt = "";
 

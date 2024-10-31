@@ -8,6 +8,71 @@ rainbow and a messenger of the gods, symbolizing communication and connection. T
 agility, attributes often associated with rabbits. Together, "HareAIris" signifies a swift and efficient messenger that
 bridges the gap between RabbitMQ and OpenAI, embodying the project's core functionality.
 
+## API
+
+### Communication
+
+The service listens for `ChatRequest` JSON objects on the RabbitMQ queue configured by the `RMQ_CHAT_REQUESTS`
+environment variable, defaulting to `chat_requests`. The service will respond with a `ChatResponse` object or a
+`ChatError` object in case of an error.
+
+The response will be sent to the default exchange with the routing key defined in the `reply_to` *property* of the
+request. This property must be provided in the request.
+
+Errors will be sent to the default exchange with the routing key set in the `error_to` *header*. This header is optional,
+but omitting it will prevent the client from receiving error messages and result in a warning printed to the log.
+
+(Please note the difference between properties and headers in RabbitMQ.)
+
+If a `correlation_id` property is set in the request, it will be copied to the response.
+
+The service will acknowledge the message on success or client errors. In case of an internal error, the message
+will be re-queued.
+
+### ChatRequest
+
+The `ChatRequest` object represents a request to the OpenAI API. It includes the following fields:
+
+```json
+{
+  "system-message": "String",
+  "prompt": "String",
+  "max-tokens": "Integer",
+  "temperature": "Double",
+  "top-p": "Double",
+  "presence-penalty": "Double",
+  "frequency-penalty": "Double"
+}
+```
+
+### ChatResponse
+
+The `ChatResponse` object represents a response from the OpenAI API. It includes the following fields:
+
+```json
+{
+  "response": "String",
+  "input-tokens": "int",
+  "output-tokens": "int"
+}
+```
+
+### ChatError
+
+The `ChatError` object represents an error response from the OpenAI API. It includes the following fields:
+
+```json
+{
+  "code": "int",
+  "message": "String"
+}
+```
+
+### Monitoring
+
+The service provides a health check endpoint at HTTP `/actuators/health` that returns a `200 OK` status code if the
+service is running.
+
 ## Configuration
 
 Configuration is done using environment variables:

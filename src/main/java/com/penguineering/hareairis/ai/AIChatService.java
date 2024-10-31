@@ -4,6 +4,7 @@ import com.azure.core.exception.HttpResponseException;
 import com.penguineering.hareairis.model.ChatException;
 import com.penguineering.hareairis.model.ChatRequest;
 import com.penguineering.hareairis.model.ChatResponse;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.azure.openai.AzureOpenAiChatOptions;
@@ -32,7 +33,9 @@ public class AIChatService {
      * @param chatRequest The chat request to handle.
      * @return The chat response.
      */
+    @RateLimiter(name = "aiChatService")
     public ChatResponse handleChatRequest(ChatRequest chatRequest) {
+        logger.info("Calling AI Service");
         try {
             AzureOpenAiChatOptions options = renderAzureOpenAiChatOptions(chatRequest);
 

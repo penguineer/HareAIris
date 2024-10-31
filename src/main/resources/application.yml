@@ -33,6 +33,13 @@ spring:
         initial-interval: 1000
         multiplier: 2
 
+resilience4j.ratelimiter:
+  instances:
+    aiChatService:
+      limitForPeriod: ${OPENAI_RATE_LIMIT:50}
+      limitRefreshPeriod: ${OPENAI_RATE_PERIOD_S:60}s
+      timeoutDuration: 0
+
 hareairis:
   rabbitmq:
     queue-chat-requests: ${RMQ_QUEUE_CHAT_REQUESTS:chat_requests}

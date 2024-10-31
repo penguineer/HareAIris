@@ -21,6 +21,8 @@ Configuration is done using environment variables:
 * `RMQ_CHAT_REQUESTS`: RabbitMQ queue for chat requests (default `chat_requests`)
 * `OPENAI_API_KEY`: API key for accessing the OpenAI API
 * `OPENAI_ENDPOINT`: Base URL for the OpenAI API (default `https://api.openai.com/v1`)
+* `OPENAI_RATE_LIMIT`: The maximum number of requests allowed in a given period (default `50`)
+* `OPENAI_RATE_PERIOD_S`: The period in seconds for the rate limit to refresh (default `60`)
 
 ## Build
 

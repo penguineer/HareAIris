@@ -25,8 +25,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RateLimitGate {
     private static final Logger logger = LoggerFactory.getLogger(RateLimitGate.class);
 
-    private final AtomicReference<Instant> nextAvailableTime = new AtomicReference<>(Instant.now());
-    private final AtomicReference<Thread> waitingThread = new AtomicReference<>(null);
+    final AtomicReference<Instant> nextAvailableTime = new AtomicReference<>(Instant.now());
+    final AtomicReference<Thread> waitingThread = new AtomicReference<>(null);
     private final Lock threadLock = new ReentrantLock();
     private final Condition threadCondition = threadLock.newCondition();
 

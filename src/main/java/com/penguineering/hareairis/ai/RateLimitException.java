@@ -2,6 +2,7 @@ package com.penguineering.hareairis.ai;
 
 import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.HttpResponse;
+import com.penguineering.hareairis.model.ChatException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -12,11 +13,11 @@ import java.util.function.Consumer;
 /**
  * Exception thrown when the OpenAI service returns a rate-limiting error.
  */
-public class RateLimitException extends RuntimeException {
+public class RateLimitException extends ChatException {
     /**
      * Creates a RateLimitException from the specified HttpResponse.
      *
-     * @param response The HttpResponse to create the exception from.
+     * @param response    The HttpResponse to create the exception from.
      * @param logConsumer The consumer to log any parsing errors.
      * @return The RateLimitException created from the HttpResponse.
      * @throws IllegalArgumentException If the response status code is not 429.
@@ -58,8 +59,7 @@ public class RateLimitException extends RuntimeException {
      * @param message The detail message.
      */
     public RateLimitException(String message) {
-        super(message);
-        this.retryAfter = null;
+        this(message, (Instant) null);
     }
 
     /**
@@ -69,7 +69,7 @@ public class RateLimitException extends RuntimeException {
      * @param retryAfter The optional point in time to hint when the service can be called again.
      */
     public RateLimitException(String message, Instant retryAfter) {
-        super(message);
+        super(Code.CODE_TOO_MANY_REQUESTS, message);
         this.retryAfter = retryAfter;
     }
 
@@ -80,8 +80,7 @@ public class RateLimitException extends RuntimeException {
      * @param duration The duration after which the service can be called again.
      */
     public RateLimitException(String message, Duration duration) {
-        super(message);
-        this.retryAfter = Instant.now().plus(duration);
+        this(message, Instant.now().plus(duration));
     }
 
     /**

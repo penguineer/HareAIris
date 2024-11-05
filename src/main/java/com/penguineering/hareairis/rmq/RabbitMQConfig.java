@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 @Configuration
 @EnableRabbit
@@ -22,6 +23,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    @DependsOn("rateLimitGate")
     public SimpleMessageListenerContainer chatRequestsContainer(ConnectionFactory connectionFactory,
                                                                 ChatRequestHandler handler) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();

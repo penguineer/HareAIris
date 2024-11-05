@@ -60,6 +60,9 @@ public class AIChatService {
             throw new ChatException(ChatException.Code.CODE_BAD_REQUEST, e.getMessage());
         } catch (HttpResponseException e) {
             var response = e.getResponse();
+            if (response.getStatusCode() == 429)
+                throw RateLimitException.fromHttpResponse(response, logger::warn);
+
             throw new ChatException(response.getStatusCode(), e.getMessage());
         }
     }

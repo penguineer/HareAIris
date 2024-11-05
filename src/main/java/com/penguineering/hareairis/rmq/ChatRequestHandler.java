@@ -32,13 +32,16 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
     private final ObjectMapper objectMapper;
     private final AIChatService aiChatService;
     private final RabbitTemplate rabbitTemplate;
+    private final RateLimitGate rateLimitGate;
 
     public ChatRequestHandler(ObjectMapper objectMapper,
                               AIChatService aiChatService,
-                              RabbitTemplate rabbitTemplate) {
+                              RabbitTemplate rabbitTemplate,
+                              RateLimitGate rateLimitGate) {
         this.objectMapper = objectMapper;
         this.aiChatService = aiChatService;
         this.rabbitTemplate = rabbitTemplate;
+        this.rateLimitGate = rateLimitGate;
     }
 
 
@@ -81,7 +84,8 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             logger.info("Reply-to header: {}", replyTo);
 
 
-            ChatResponse result = aiChatService.handleChatRequest(chatRequest);
+            ChatResponse result = rateLimitGate.callWithRateLimit(
+                    () -> aiChatService.handleChatRequest(chatRequest));
 
             // Convert ChatResponse to JSON
             String jsonResponse = serializeChatResponse(result);
@@ -95,6 +99,11 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
 
             // Acknowledge the message
             channel.basicAck(deliveryTag, false);
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for rate limit, current message will not be acked and remains in the queue.");
+
+            // restore the interrupt flag
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.info("Error on chat request", e);
             Optional<String> json = serializeChatError(e);

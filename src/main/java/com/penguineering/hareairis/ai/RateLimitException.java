@@ -29,6 +29,10 @@ public class RateLimitException extends ChatException {
         String errorMessage = response.getBodyAsString().block();
         String retryAfterHeader = response.getHeaders().getValue(HttpHeaderName.RETRY_AFTER);
 
+        // try header x-ratelimit-timeremaining
+        if (Objects.isNull(retryAfterHeader))
+            retryAfterHeader = response.getHeaders().getValue(HttpHeaderName.fromString("x-ratelimit-timeremaining"));
+
         if (Objects.isNull(retryAfterHeader))
             return new RateLimitException(errorMessage);
 

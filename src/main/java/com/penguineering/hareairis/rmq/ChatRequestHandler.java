@@ -44,7 +44,6 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
         this.rateLimitGate = rateLimitGate;
     }
 
-
     /**
      * Handles a chat request.
      *
@@ -91,11 +90,7 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             String jsonResponse = serializeChatResponse(result);
 
             // Send the response to the replyTo queue
-            MessageProperties messageProperties = new MessageProperties();
-            correlationId.ifPresent(messageProperties::setCorrelationId);
-            messageProperties.setContentType("application/json");
-            Message responseMessage = new Message(jsonResponse.getBytes(), messageProperties);
-            rabbitTemplate.send(replyTo, responseMessage);
+            send(jsonResponse, replyTo, correlationId);
 
             // Acknowledge the message
             channel.basicAck(deliveryTag, false);
@@ -109,12 +104,20 @@ public class ChatRequestHandler implements ChannelAwareMessageListener {
             Optional<String> json = serializeChatError(e);
             errorTo.ifPresentOrElse(
                     to -> json.ifPresent(
-                            j -> rabbitTemplate.convertAndSend(to, j)),
+                            j -> send(j, to, correlationId)),
                     () -> logger.error("Error on handling chat request!", e)
             );
 
             doExceptionBasedAck(e, channel, deliveryTag);
         }
+    }
+
+    private void send(String json, String to, Optional<String> correlationId) {
+        MessageProperties messageProperties = new MessageProperties();
+        correlationId.ifPresent(messageProperties::setCorrelationId);
+        messageProperties.setContentType("application/json");
+        Message responseMessage = new Message(json.getBytes(), messageProperties);
+        rabbitTemplate.send(to, responseMessage);
     }
 
     private void doExceptionBasedAck(Exception e, Channel channel, long deliveryTag) {
